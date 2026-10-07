@@ -3,7 +3,9 @@ import { marked } from "marked";
 import { site, socials } from "../config";
 import { getGitHubRepositories, getGithubReadme } from "../lib/github";
 import "../styles/global.css";
+import { getModrinthProjects } from "../lib/modrinth";
 
+const projects = await getModrinthProjects();
 const repositories = await getGitHubRepositories();
 
 const profileRepository = repositories.find((repository) => repository.name === site.username);
@@ -57,6 +59,39 @@ const parsedReadme = readme ? marked.parse(readme) : null;
 									{repository.language && <span>{repository.language}</span>}
 									{repository.stargazers_count > 0 && (
 										<span class="repos-stars">★ {repository.stargazers_count}</span>
+									)}
+								</div>
+							</a>
+						</li>
+					))}
+				</ul>
+				
+				<h2>Modrinth Projects</h2>
+
+				<ul class="repos">
+					{projects.map((project) => (
+						<li>
+							<a href={`https://modrinth.com/project/${project.slug}`} target="_blank" rel="noopener noreferrer">
+								<div class="repos-head">
+									<span class="repos-name">{project.title}</span>
+									<span class="repos-arrow" aria-hidden="true">
+										↗
+									</span>
+								</div>
+								{project.description && (
+									<p class="repos-desc">{project.description}</p>
+								)}
+								{project.categories.length > 0 && (
+									<ul class="repos-topics">
+										{project.categories.slice(0, 3).map((topic) => (
+											<li>{topic}</li>
+										))}
+									</ul>
+								)}
+								<div class="repos-meta">
+									{project.downloads > 0 && <span>↓ {project.downloads}</span>}
+									{project.followers > 0 && (
+										<span class="repos-stars">♡ {project.followers}</span>
 									)}
 								</div>
 							</a>
