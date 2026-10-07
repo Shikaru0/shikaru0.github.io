@@ -1,0 +1,85 @@
+---
+import { marked } from "marked";
+import { site, socials } from "../config";
+import { getGitHubRepositories, getGithubReadme } from "../lib/github";
+import "../styles/global.css";
+
+const repositories = await getGitHubRepositories();
+
+const profileRepository = repositories.find((repository) => repository.name === site.username);
+const readme = profileRepository ? await getGithubReadme(profileRepository) : null;
+const parsedReadme = readme ? marked.parse(readme) : null;
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={`${site.username}`} />
+		<title>{site.username}</title>
+	</head>
+	<body>
+		<main class="page">
+			<h1>{site.username}</h1>
+			<div>
+				{parsedReadme ? (
+					<div class="prose" set:html={parsedReadme} />
+				) : (
+					<p>No README found for the user.</p>
+				)}
+
+				<h2>GitHub Repositories</h2>
+
+				<ul class="repos">
+					{repositories.map((repository) => (
+						<li>
+							<a href={repository.html_url} target="_blank" rel="noopener noreferrer">
+								<div class="repos-head">
+									<span class="repos-name">{repository.name}</span>
+									<span class="repos-arrow" aria-hidden="true">
+										↗
+									</span>
+								</div>
+								{repository.description && (
+									<p class="repos-desc">{repository.description}</p>
+								)}
+								{repository.topics.length > 0 && (
+									<ul class="repos-topics">
+										{repository.topics.slice(0, 3).map((topic) => (
+											<li>{topic}</li>
+										))}
+									</ul>
+								)}
+								<div class="repos-meta">
+									{repository.language && <span>{repository.language}</span>}
+									{repository.stargazers_count > 0 && (
+										<span class="repos-stars">★ {repository.stargazers_count}</span>
+									)}
+								</div>
+							</a>
+						</li>
+					))}
+				</ul>
+
+				{socials.length > 0 && (
+					<>
+						<h2>Socials</h2>
+
+						<ul class="socials">
+							{socials.map((social) => (
+								<li>
+									<a href={social.url} target="_blank" rel="noopener noreferrer">
+										<span class="socials-name">{social.name}</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</>
+				)}
+			</div>
+		</main>
+	</body>
+</html>
